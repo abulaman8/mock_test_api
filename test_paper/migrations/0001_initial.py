@@ -6,47 +6,108 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('qp', '0001_initial'),
+        ("qp", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TestPaper',
+            name="TestPaper",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('score', models.DecimalField(decimal_places=2, default=0.0, max_digits=5)),
-                ('time_spent', models.DurationField(blank=True, null=True)),
-                ('question_paper', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='qp.questionpaper')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "score",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=5),
+                ),
+                ("time_spent", models.DurationField(blank=True, null=True)),
+                (
+                    "question_paper",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="qp.questionpaper",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TestQuestion',
+            name="TestQuestion",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(choices=[('Numeric', 'Numeric'), ('Text', 'Text'), ('SCQ', 'SCQ'), ('MCQ', 'MCQ')], max_length=10)),
-                ('score', models.DecimalField(decimal_places=2, default=0.0, max_digits=5)),
-                ('num_min', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
-                ('num_max', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
-                ('text_answer', models.TextField(blank=True, null=True)),
-                ('time_spent', models.DurationField(blank=True, null=True)),
-                ('choices', models.ManyToManyField(blank=True, to='qp.choice')),
-                ('question', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='qp.question')),
-                ('test_paper', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='test_paper.testpaper')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("Numeric", "Numeric"),
+                            ("Text", "Text"),
+                            ("SCQ", "SCQ"),
+                            ("MCQ", "MCQ"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "score",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=5),
+                ),
+                (
+                    "num_min",
+                    models.DecimalField(
+                        blank=True, decimal_places=2, max_digits=10, null=True
+                    ),
+                ),
+                (
+                    "num_max",
+                    models.DecimalField(
+                        blank=True, decimal_places=2, max_digits=10, null=True
+                    ),
+                ),
+                ("text_answer", models.TextField(blank=True, null=True)),
+                ("time_spent", models.DurationField(blank=True, null=True)),
+                ("choices", models.ManyToManyField(blank=True, to="qp.choice")),
+                (
+                    "question",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="qp.question"
+                    ),
+                ),
+                (
+                    "test_paper",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="test_paper.testpaper",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='testpaper',
-            name='test_questions',
-            field=models.ManyToManyField(to='test_paper.testquestion'),
+            model_name="testpaper",
+            name="test_questions",
+            field=models.ManyToManyField(to="test_paper.testquestion"),
         ),
         migrations.AddField(
-            model_name='testpaper',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="testpaper",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]

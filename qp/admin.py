@@ -1,12 +1,6 @@
 from django.contrib import admin
 
-from .models import (
-        Question,
-        Choice,
-        QuestionPaper
-        )
-
-
+from .models import Question, Choice, QuestionPaper
 
 
 admin.site.register(QuestionPaper)
