@@ -8,7 +8,7 @@ from course.models import Course
 class Student_Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     dp = models.TextField(default="default_user.png")
-    bio = models.TextField(default="")
+    bio = models.TextField(default="", blank=True, null=True)
     courses = models.ManyToManyField(Course, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

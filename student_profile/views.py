@@ -25,7 +25,8 @@ def register(request):
     email = data.get("email")
     if User.objects.filter(Q(username=username) | Q(email=email)).exists():
         return Response(
-            {"message": "User already exists"}, status=status.HTTP_400_BAD_REQUEST
+            {"message": "User already exists"},
+            status=status.HTTP_400_BAD_REQUEST
         )
     try:
         validate_password(password)
@@ -33,7 +34,11 @@ def register(request):
         return Response(
             {"message": list(e.messages)}, status=status.HTTP_400_BAD_REQUEST
         )
-    user = User.objects.create_user(username=username, password=password, email=email)
+    user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email
+            )
     user.save()
     return Response(
         {
@@ -47,7 +52,8 @@ def register(request):
 @permission_classes([IsAuthenticated])
 def profile(request):
     user = request.user
-    serialized = StudentProfileSerializer(user)
+    user_profile = Student_Profile.objects.get(user=user)
+    serialized = StudentProfileSerializer(user_profile)
     return Response(serialized.data, status=status.HTTP_200_OK)
 
 
