@@ -2,11 +2,12 @@ from django.db import models
 from qp.models import QuestionPaper, Question
 from django.contrib.auth.models import User
 from qp.models import Choice
-
+from django.conf import settings
+import decimal
 
 class TestPaper(models.Model):
     question_paper = models.ForeignKey(QuestionPaper, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     test_questions = models.ManyToManyField("TestQuestion", blank=True)
     time_spent = models.DurationField(null=True, blank=True)
@@ -81,7 +82,7 @@ class TestQuestion(models.Model):
         elif self.type == "MCQ":
             val = self.question.is_correct(self.user_choices.all())
             if val:
-                self.score = self.marks
+                self.score = self.marks * decimal.Decimal(val)
                 self.save()
             else:
                 self.score = 0

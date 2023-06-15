@@ -20,6 +20,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    "django_use_email_as_username.apps.DjangoUseEmailAsUsernameConfig",
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
@@ -29,12 +30,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "custom_user.apps.CustomUserConfig",
     "student_profile",
     "qp",
     "course",
     "test_paper",
 ]
-
+AUTH_USER_MODEL = 'custom_user.User'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -150,3 +152,6 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "https://e6ab-2401-4900-22ca-62ec-3560-4e19-c159-4070.ngrok-free.app"
 ]
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

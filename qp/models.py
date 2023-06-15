@@ -55,7 +55,13 @@ class Question(models.Model):
                 elif len(given) == 0:
                     return False
                 else:
-                    return self.choices.count() / len(given)
+                    print(self.choices.count())
+                    print(len(given))
+                    c = 0
+                    for choice in self.choices.all():
+                        if choice.is_correct:
+                            c += 1
+                    return len(given)/c
 
     def clean(self):
         if self.type == "Numeric":
