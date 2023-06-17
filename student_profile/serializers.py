@@ -1,8 +1,8 @@
 from rest_framework.serializers import ModelSerializer
 from .models import Student_Profile
 from course.serializers import CourseSerializer
-from django.conf import settings
 from django.contrib.auth import get_user_model
+
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -16,7 +16,12 @@ class StudentProfileSerializer(ModelSerializer):
 
     class Meta:
         model = Student_Profile
-        fields = ["user", "dp", "bio", "courses", "created_at", "updated_at"]
-
-
-# print("comment")
+        fields = [
+                "user",
+                "username",
+                "dp",
+                "bio",
+                "courses",
+                "created_at",
+                "updated_at"
+                ]

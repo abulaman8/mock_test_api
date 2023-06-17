@@ -8,11 +8,11 @@ from rest_framework import status
 from .serializers import StudentProfileSerializer
 from .models import Student_Profile, Password_Reset
 from custom_user.models import User
-import uuid
 from django.core.mail import send_mail
-from django.urls import reverse
 import random
-
+import math
+from datetime import datetime, timedelta
+import pytz
 
 @api_view(["GET"])
 def home(request):
@@ -115,23 +115,37 @@ def change_password(request):
         status=status.HTTP_200_OK,
     )
 
+
 @api_view(["POST"])
 def forgot_password(request):
     email = request.data.get("email")
     user = User.objects.filter(email=email).first()
-    token_set = False
-    while not token_set:
-        token = uuid.uuid4() 
-        password_reset_token = Password_Reset.objects.create(user=user, token=token)
-        try:
-            password_reset_token.save()
-            token_set = True
-        except:
-            pass
-    url = request.build_absolute_uri(reverse('reset_password_with_token', kwargs={'token': token}))
+    profile = Student_Profile.objects.filter(user=user).first()
+    string = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    length = len(string)
+    otp = ""
+    for _ in range(6):
+        otp += string[math.floor(random.random() * length)]
+    pwd_reset = Password_Reset.objects.get_or_create(user=user)[0]
+    pwd_reset.otp = otp
+    pwd_reset.expiry = datetime.now(tz=pytz.timezone('Asia/Kolkata')) + timedelta(hours=6)
+    pwd_reset.save()
+
+    email_string = f"""
+    Dear {profile.username},
+    We have received a request to reset the password for your account. To ensure the security of your account, we have generated a One-Time Password (OTP) that you can use to complete the password reset process.
+
+    Please find below your OTP details:
+        OTP: {otp}
+
+    Please note that this OTP is valid for a limited time and can only be used
+    once. Do not share this OTP with anyone.
+
+    If you did not initiate this password reset request or believe it to be in error, please ignore this email. Your account will remain secure, and no changes will be made.
+    """
     send_mail(
         'Password Reset',
-        f'Click on the link to reset your password: {url}',
+        email_string,
         'abulaman6@gmail.com',
         [user.email],
         fail_silently=False
@@ -139,18 +153,48 @@ def forgot_password(request):
             )
     return Response(
         {
-            "message": "Password reset link sent to your email",
+            "message": "OTP has been sent to your email",
         },
         status=status.HTTP_200_OK,
     )
 
 
 @api_view(["POST"])
-def reset_password_with_token(request, token):
+def verify_otp(request):
     data = request.data
-    password_reset_token = Password_Reset.objects.get(token=token)
-    user = password_reset_token.user
-    new_password = data.get("password")
+    email = data.get("email")
+    otp = data.get("otp")
+    user = User.objects.get(email=email)
+    pwd_reset = Password_Reset.objects.filter(
+            Q(user=user) & Q(otp=otp)).first()
+    print(pwd_reset.expiry)
+    print(datetime.now(tz=pytz.timezone('Asia/Kolkata')))
+
+    if pwd_reset and pwd_reset.expiry > datetime.now(tz=pytz.timezone('Asia/Kolkata')) and pwd_reset.otp == otp:
+        pwd_reset.verified = True
+        pwd_reset.save()
+        return Response(
+            {
+                "message": "OTP verified",
+            },
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            {
+                "message": "Invlid OTP",
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@api_view(["POST"])
+def reset_password_with_otp(request):
+    data = request.data
+    email = data.get("email")
+    new_password = data.get("new_password")
+    user = User.objects.get(email=email)
+    pwd_reset = Password_Reset.objects.get(user=user)
     try:
         validate_password(new_password)
     except ValidationError as e:
@@ -159,6 +203,7 @@ def reset_password_with_token(request, token):
         )
     user.set_password(new_password)
     user.save()
+    pwd_reset.delete()
     return Response(
         {
             "message": "Password changed successfully",

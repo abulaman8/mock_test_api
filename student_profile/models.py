@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from course.models import Course
 from django.conf import settings
 from datetime import datetime, timedelta
-import uuid
+import pytz
 
 
 class Student_Profile(models.Model):
@@ -29,9 +29,15 @@ def user_creation_handler(sender, instance, created, *args, **kwargs):
         new_profile.save()
 
 
-
 class Password_Reset(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False)
-    token = models.UUIDField(default=uuid.uuid4, null=False)
+    user = models.ForeignKey(
+            settings.AUTH_USER_MODEL,
+            on_delete=models.CASCADE,
+            null=False
+            )
+    otp = models.CharField(max_length=8, null=True, blank=True)
+    verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    expiry = models.DateTimeField(null=False, default=datetime.now() + timedelta(days=1))
+    expiry = models.DateTimeField(
+            null=False,
+            default=datetime.now(tz=pytz.timezone('Asia/Kolkata')) +timedelta(hours=6))

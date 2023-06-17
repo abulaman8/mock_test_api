@@ -14,7 +14,7 @@ def course_list(request):
 
 @api_view(['GET'])
 def course_by_level(request, level):
-    cl = Level.objects.get(level=level)
+    cl = Level.objects.get(name=level)
     courses = Course.objects.filter(level=cl).all()
     serializer = CourseSerializer(courses, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
