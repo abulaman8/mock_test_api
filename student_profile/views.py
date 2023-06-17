@@ -8,7 +8,8 @@ from rest_framework import status
 from .serializers import StudentProfileSerializer
 from .models import Student_Profile, Password_Reset
 from custom_user.models import User
-from django.core.mail import send_mail
+# from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 import random
 import math
 from datetime import datetime, timedelta
@@ -121,36 +122,52 @@ def forgot_password(request):
     email = request.data.get("email")
     user = User.objects.filter(email=email).first()
     profile = Student_Profile.objects.filter(user=user).first()
-    string = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    string = '01234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
     length = len(string)
     otp = ""
-    for _ in range(6):
+    for _ in range(8):
         otp += string[math.floor(random.random() * length)]
     pwd_reset = Password_Reset.objects.get_or_create(user=user)[0]
     pwd_reset.otp = otp
     pwd_reset.expiry = datetime.now(tz=pytz.timezone('Asia/Kolkata')) + timedelta(hours=6)
     pwd_reset.save()
+    #
+    # email_string = f"""
+    # Dear {profile.username},
+    # We have received a request to reset the password for your account.
+    # To ensure the security of your account, we have generated an OTP
+    # that you can use to complete the password reset process.
+    #
+    # Please find below your OTP details:
+    #     OTP: {otp}
+    #
+    # Please note that this OTP is valid for 6 hours and can only be used
+    # once. Do not share this OTP with anyone.
+    #
+    # If you did not initiate this password reset request or believe it to be a
+    # mistake, please ignore this email.
+    # Your account will remain secure, and no changes will be made.
+    # """
+    # send_mail(
+    #     'Password Reset',
+    #     email_string,
+    #     'abulaman6@gmail.com',
+    #     [user.email],
+    #     fail_silently=False
+    #
+    # )
 
-    email_string = f"""
-    Dear {profile.username},
-    We have received a request to reset the password for your account. To ensure the security of your account, we have generated a One-Time Password (OTP) that you can use to complete the password reset process.
-
-    Please find below your OTP details:
-        OTP: {otp}
-
-    Please note that this OTP is valid for a limited time and can only be used
-    once. Do not share this OTP with anyone.
-
-    If you did not initiate this password reset request or believe it to be in error, please ignore this email. Your account will remain secure, and no changes will be made.
-    """
-    send_mail(
-        'Password Reset',
-        email_string,
-        'abulaman6@gmail.com',
-        [user.email],
-        fail_silently=False
-
+    msg = EmailMessage(
+            from_email="abulaman6@gmail.com",
+            to=[user.email]
             )
+    msg.template_id = "d-6e984308dc0845a98b0d078ed5a3047e"
+    msg.dynamic_template_data = {
+        "username": profile.username,
+        "otp": otp
+            }
+    msg.send(fail_silently=False)
+
     return Response(
         {
             "message": "OTP has been sent to your email",
