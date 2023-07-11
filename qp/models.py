@@ -3,6 +3,19 @@ from django.core.exceptions import ValidationError
 from course.models import Course
 from django.dispatch import receiver
 from django.db.models.signals import m2m_changed
+from django.conf import settings
+
+
+class QPFile(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    file = models.FileField(upload_to="question_papers")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+
+
+class ImageContent(models.Model):
+    img = models.ImageField(upload_to="question_images")
 
 
 class QuestionPaper(models.Model):
@@ -32,6 +45,7 @@ class Question(models.Model):
     type = models.CharField(max_length=10, choices=QUESTION_TYPES)
     text = models.TextField()
     marks = models.IntegerField()
+    images = models.ManyToManyField("ImageContent", blank=True)
     choices = models.ManyToManyField("Choice", blank=True)
     num_min = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True
@@ -105,6 +119,7 @@ class Question(models.Model):
 class Choice(models.Model):
     related_question = models.ForeignKey("Question", on_delete=models.CASCADE)
     choice = models.TextField()
+    images = models.ManyToManyField("ImageContent", blank=True)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):

@@ -5,7 +5,11 @@ from rest_framework import status
 
 
 from .models import TestPaper, TestQuestion
-from .serializers import TestPaperSerializer, TestQuestionSerializer
+from .serializers import (
+        TestPaperSerializer,
+        TestQuestionSerializer,
+        PartialTestPaperSerializer
+        )
 from qp.models import QuestionPaper
 
 
@@ -40,7 +44,7 @@ def start_test(request):
         new_testpaper.test_questions.add(tq)
         new_testpaper.save()
 
-    serialized = TestPaperSerializer(new_testpaper, many=False)
+    serialized = PartialTestPaperSerializer(new_testpaper, many=False)
     return Response(serialized.data)
 
 
@@ -57,9 +61,19 @@ def get_qn(request, id):
 def submit_test(request):
     data = request.data
     testpaper = TestPaper.objects.get(id=data["id"])
+    if not testpaper:
+        return Response(
+                "Test Paper not found",
+                status=status.HTTP_404_NOT_FOUND
+                )
     if testpaper.user != request.user:
         return Response(
             "You are not allowed to submit this test",
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    if testpaper.submitted:
+        return Response(
+            "You have already submitted this test",
             status=status.HTTP_401_UNAUTHORIZED,
         )
     user_test_questions = data["test_questions"]
@@ -75,7 +89,7 @@ def submit_test(request):
         elif test_qn.type == "Text":
             test_qn.user_text_answer = user_test_questions[qn]
             test_qn.save()
-    testpaper.is_submitted = True
+    testpaper.submitted = True
     testpaper.save()
     testpaper.evaluate()
     serialized = TestPaperSerializer(testpaper, many=False)

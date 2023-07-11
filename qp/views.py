@@ -1,6 +1,7 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser
 from .serializers import QuestionPaperSerializer
 from .models import Question, Choice, QuestionPaper
 from rest_framework import status
@@ -29,3 +30,11 @@ def get_by_course_and_type(request, course_id, type):
     qp = QuestionPaper.objects.filter(Q(type=type) & Q(course=course_id)).all()
     serializer = QuestionPaperSerializer(qp, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@parser_classes([MultiPartParser])
+@permission_classes([IsAuthenticated])
+def send_paper(request):
+    file = request.FILES['file']
+    return 0
+
