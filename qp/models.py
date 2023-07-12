@@ -15,8 +15,10 @@ class QPFile(models.Model):
 
 
 class ImageContent(models.Model):
-    img = models.ImageField(upload_to="question_images")
+    img = models.ImageField(upload_to="images")
 
+    def __str__(self):
+        return self.img.name
 
 class QuestionPaper(models.Model):
     types_choices = [
@@ -30,7 +32,7 @@ class QuestionPaper(models.Model):
     questions = models.ManyToManyField("Question", blank=True)
 
     def __str__(self):
-        return self.name
+        return self.name + " " + self.course.name
 
 
 class Question(models.Model):
@@ -107,7 +109,10 @@ class Question(models.Model):
                 raise ValidationError("SCQ question should not have text answer")
 
     def __str__(self):
-        return self.text
+        if len(self.text):
+            return self.text if len(self.text) < 36 else self.text[:36] + "..."
+        else:
+            return str(self.images.first())
 
 
 # def save(self, *args, **kwargs):
@@ -123,7 +128,7 @@ class Choice(models.Model):
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.choice
+        return self.choice if len(self.choice) else str(self.images.first())
 
 
 @receiver(m2m_changed, sender=Question.choices.through)

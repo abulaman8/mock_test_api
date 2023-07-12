@@ -15,6 +15,7 @@ import math
 from datetime import datetime, timedelta
 import pytz
 
+
 @api_view(["GET"])
 def home(request):
     return Response("Hello World")
